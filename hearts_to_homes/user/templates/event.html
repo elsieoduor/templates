@@ -1,0 +1,73 @@
+{% extends 'base.html'%}
+{%load static%}
+{% block title %}Events{% endblock %} 
+{% block css %}{% static "css/event.css" %} {% endblock %}
+
+{% block body %}
+
+{% include 'includes/nav.html'%}
+
+<main class="main">
+  <h4>Event:</h4>
+  <div class="events">
+    <div class="event-card">
+        <img src="{% static 'images/children2.jpg'%}" alt="Event 1">
+        <div class="event-details">
+            <h3>Event 1</h3>
+            <p>Date: DD/MM/YYYY</p>
+            <p>Time: HH:MM AM/PM</p>
+            <p>Location: Event Location</p>
+        </div>
+    </div>
+    <div class="event-card">
+      <img src="{% static 'images/children2.jpg'%}" alt="Event 1">
+      <div class="event-details">
+          <h3>Event 1</h3>
+          <p>Date: DD/MM/YYYY</p>
+          <p>Time: HH:MM AM/PM</p>
+          <p>Location: Event Location</p>
+      </div>
+    </div>
+    <div class="event-card">
+      <img src="{% static 'images/children2.jpg'%}" alt="Event 1">
+      <div class="event-details">
+          <h3>Event 1</h3>
+          <p>Date: DD/MM/YYYY</p>
+          <p>Time: HH:MM AM/PM</p>
+          <p>Location: Event Location</p>
+      </div>
+  </div>
+  <div class="event-card">
+    <img src="{% static 'images/children2.jpg'%}" alt="Event 1">
+    <div class="event-details">
+        <h3>Event 1</h3>
+        <p>Date: DD/MM/YYYY</p>
+        <p>Time: HH:MM AM/PM</p>
+        <p>Location: Event Location</p>
+    </div>
+</div>
+<div class="event-card">
+  <img src="{% static 'images/children2.jpg'%}" alt="Event 1">
+  <div class="event-details">
+      <h3>Event 1</h3>
+      <p>Date: DD/MM/YYYY</p>
+      <p>Time: HH:MM AM/PM</p>
+      <p>Location: Event Location</p>
+  </div>
+</div>
+<div class="event-card">
+  <img src="{% static 'images/children2.jpg'%}" alt="Event 1">
+  <div class="event-details">
+      <h3>Event 1</h3>
+      <p>Date: DD/MM/YYYY</p>
+      <p>Time: HH:MM AM/PM</p>
+      <p>Location: Event Location</p>
+  </div>
+</div>  
+  </div>
+</main>
+
+<footer class="footer">
+  <p>&copy; 2023 Hearts to Homes.  All Rights Reserved.</p>
+</footer>
+{% endblock %} 
