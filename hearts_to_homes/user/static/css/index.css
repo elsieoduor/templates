@@ -6,19 +6,20 @@ body{
   min-height: 100vh;
   margin: 0;
   position: relative;
-  color: black;
+  /* color: black; */
+  background-color: #618264 !important;
 }
 a{
   text-decoration: none;
  
 }
 .header{
- background-color: #E6F7FF ;
+ background-color: #79AC78;
 
 }
 .navbar{
   display: flex;
-  color: black;
+  color: #E6E6FA;
   align-items: center;
   justify-content: space-between;
   padding: 30px;
@@ -27,7 +28,7 @@ a{
 .nav-logo{
   font-weight: bold;
   text-decoration: none;
-  color: #4CAF50;
+  color: #F5FCCD;
 }
 .nav-links{
   margin-left: 100px;
@@ -38,16 +39,25 @@ a{
 }
 .nav-links a:hover{
   cursor: pointer;
-  color: #003366;
+  color:  #B0D9B1;
   
 }
 .nav-auth button{
-  border: none;
-  background-color: #0077B6;
-  color: white;
+  background-color: white;
+  outline-style: solid;
+  outline:2px solid  #B0D9B1;
+  color: black;
   cursor: pointer;
   padding: 8px;
-  border-radius: 4px;
+  border-radius: 5px;
+  border: none;
+  margin-left: 4px;
+}
+.nav-auth button:hover{
+  background-color: #B0D9B1;
+  border: none;
+  color: black;
+  outline: none;
 }
 
 /* Hero Section styles */
@@ -85,13 +95,22 @@ a{
   border-radius: 5px;
   margin-top: 10px;
   margin-right: 30px;
+  margin-left: 50px;
  
 }
 
 .about-text p, .about-text h2, .about-text a{
   width: 70%;
   padding: 0 10px;
-  color: #003366 !important;
+  color: black !important;
+}
+
+.about-text h2{
+  color: #006091!important;
+}
+.about-text a:hover{
+  color: #ffc90e !important;
+  text-decoration: underline;
 }
 
 
@@ -124,9 +143,12 @@ a{
 }
 .donation-details a{
   padding: 4px;
-  background-color: black;
-  color: white;
+  outline:2px solid  #f4aa00;
+  color: black;
   border-radius: 2px;
+}
+.donation-details a:hover{
+  background-color: #f4aa00;
 }
 
 /* Events Section styles */

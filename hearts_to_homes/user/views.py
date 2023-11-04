@@ -1,91 +1,9 @@
 from django.shortcuts import render, redirect
+from django.utils import timezone
+from django.db.models import F
 from .models import Donation, ChildrensHome, UserProfile, Review, Visit
-from .forms import ReviewForm, DonationForm, VisitForm, AddProfileForm, EditHomesForm
+from .forms import ReviewForm, DonationForm, VisitForm, AddProfileForm, EditHomesForm, AddHomesForm, UserCreationForm
 
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-# from . import serializer
-# from django.contrib.auth import authenticate
-
-class UserView(APIView):
-    authentication_classes = [JWTAuthentication]
-
-    def get(self, request):
-        return Response({'user': request.user.username})
-
-class ChiefView(APIView):
-    authentication_classes = [JWTAuthentication]
-
-    def get(self, request):
-        return Response({'chief': request.user.username})
-
-class CreateAccountView(APIView):
-    authentication_classes = []
-
-    def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        role = request.data.get('role')
-
-        if not username or not password or not role:
-            return Response({'error': 'Please provide all required fields'})
-
-        user = UserProfile.objects.create_user(username=username, password=password, role=role)
-
-        serializer = serializer.UserSerializer(user)
-
-        return Response(serializer.data)
-
-class LoginView(APIView):
-    authentication_classes = []
-
-    def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-
-        if not username or not password:
-            return Response({'error': 'Please provide both username and password'})
-
-        user = authenticate(username=username, password=password)
-
-        if not user:
-            return Response({'error': 'Invalid credentials'})
-
-        serializer = UserSerializer(user)
-
-        return Response(serializer.data)
-
-class ChildrenHomeListView(APIView):
-    authentication_classes = [JWTAuthentication]
-
-    def get(self, request):
-        children_homes = ChildrensHome.objects.all()
-        return Response(children_homes.values())
-
-class ChildrenHomeSearchView(APIView):
-    authentication_classes = [JWTAuthentication]
-
-    def get(self, request):
-        location = request.query_params.get('location')
-        name = request.query_params.get('name')
-
-        if location:
-            children_homes = ChildrensHome.objects.filter(location=location)
-        elif name:
-            children_homes = ChildrensHome.objects.filter(name__icontains=name)
-        else:
-            children_homes = ChildrensHome.objects.all()
-
-        return Response(children_homes.values())
-
-class ChildrenHomeDetailView(APIView):
-    authentication_classes = [JWTAuthentication]
-
-    def get(self, request, pk):
-        children_home = ChildrensHome.objects.get(pk=pk)
-        return Response(children_home.values())
 
 # Create your views here.
 def home(request):
@@ -191,7 +109,19 @@ def make_donations(request,id):
         form = DonationForm(request.POST)
         if form.is_valid():
             donation = form.save(commit=False)
-            donation.children_home = ChildrensHome.objects.get(id=id)
+            children_home = ChildrensHome.objects.get(id=id)
+
+            # Update needs based on the type of donation made
+            if donation.donated_item == 'clothes':
+                ChildrensHome.objects.filter(id=id).update(needs_clothes=F('needs_clothes') - 1)
+            elif donation.donated_item == 'hygiene':
+                ChildrensHome.objects.filter(id=id).update(needs_hygiene_supplies=F('needs_hygiene_supplies') - 1)
+            elif donation.donated_item == 'food':
+                ChildrensHome.objects.filter(id=id).update(needs_food=F('needs_food') - 1)
+            elif donation.donated_item == 'money':
+                ChildrensHome.objects.filter(id=id).update(needs_money=F('needs_money') - 1)
+
+            donation.childrens_home = children_home
             donation.save()
             return redirect('donations')
     else:
@@ -200,16 +130,24 @@ def make_donations(request,id):
 
 #Visitation date (requires authentication)
 def schedule_visit(request, id):
+    user_visits = Visit.objects.filter(user=request.user, visit_date__gte=timezone.now())
     if request.method == 'POST':
         form = VisitForm(request.POST)
         if form.is_valid():
             visit = form.save(commit=False)
-            visit.children_home = ChildrensHome.objects.get(id=id)
+            home = ChildrensHome.objects.get(id=id)
+            visit.childrens_home = home
             visit.save()
+
+            # Increment the visit count for the home
+            home.visit += 1
+            home.save()
+
             return redirect('events')
     else:
         form = VisitForm()
     return render(request, 'user/visit_form.html', {'form': form})
+
 
 #Create a review (requires authentication)
 def submit_review(request,id):
@@ -228,15 +166,7 @@ def submit_review(request,id):
 
 
 #Chief part  
-def chief_dashboard(request):
-    # user = UserProfile.objects.all()
-    # homes = ChildrensHome.objects.all()
-    # visits = Visit.objects.all().order_by("-date")[:5]  
-    # context = {
-    #     'user':user,
-    #     'homes':homes,
-    #     'visits':visits,
-    # }
+def chief_dashboard(request):  
     return render(request,'chief/dashboard.html')
 
 def chief_loginpage(request):
@@ -251,39 +181,26 @@ def all_users(request):
     return render(request,'chief/all_users.html',context)
 
 def add_user(request):
-    pass
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('users') 
+    else:
+        form = UserCreationForm()
+
+    return render(request, 'chief/add_user.html', {'form': form})
 
 def add_home(request):
-    pass
-# def add(request):
-#   if request.method == 'POST':
-#     form = StudentForm(request.POST)
-#     if form.is_valid():
-#       new_student_number = form.cleaned_data['student_number']
-#       new_first_name = form.cleaned_data['first_name']
-#       new_last_name = form.cleaned_data['last_name']
-#       new_email = form.cleaned_data['email']
-#       new_field_of_study = form.cleaned_data['field_of_study']
-#       new_gpa = form.cleaned_data['gpa']
-
-#       new_student = Student(
-#         student_number=new_student_number,
-#         first_name=new_first_name,
-#         last_name=new_last_name,
-#         email=new_email,
-#         field_of_study=new_field_of_study,
-#         gpa=new_gpa
-#       )
-#       new_student.save()
-#       return render(request, 'students/add.html', {
-#         'form': StudentForm(),
-#         'success': True
-#       })
-#   else:
-#     form = StudentForm()
-#   return render(request, 'students/add.html', {
-#     'form': StudentForm()
-#   })
+  if request.method == 'POST':
+        form = AddHomesForm(request.POST, request.FILES)
+        if form.is_valid():
+            new_home = form.save(commit=False)
+            new_home.save()
+            return redirect('children_homes', id=new_home.id)  
+  else:
+        form = AddHomesForm()
+  return render(request, 'chief/add_home.html', {'form': form})
 
 def edit_home(request, id):
     if request.method == 'POST':
@@ -308,8 +225,9 @@ def delete_home(request, id):
 
 #Analytics of the homes
 def most_visited_home(request):
+    upcoming_visits = Visit.objects.filter(visit_date__gte=timezone.now())
     most_visited_home = ChildrensHome.objects.order_by('-visit').first()
-    context = {'most_visited_home': most_visited_home}
+    context = {'most_visited_home': most_visited_home, "upcoming_visits": upcoming_visits}
     return render(request, 'chief/most_visited_home.html', context)
 
 def most_in_need_home(request):
